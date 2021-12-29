@@ -1,0 +1,58 @@
+from django.urls import path
+from .views import car_views
+from .views import card_views
+from .views import transaction_views
+
+urlpatterns = [
+    path('car/', car_views.carOverview, name="car-overview"),
+    path('car/list/', car_views.carList, name="car-list"),
+    path('car/listByWorkmanship/', car_views.carListDecreasingByWorkmanship,
+         name="car-list-decreasing-by-workmanship"),
+    path('car/detail/<str:pk>/', car_views.carDetail, name='car-detail'),
+    path('car/create/', car_views.carCreate, name='car-create'),
+    path('car/random/<int:n>/', car_views.carCreateRandom,
+         name='car-create-random'),
+    path('car/update/<str:pk>/', car_views.carUpdate, name='car-update'),
+    path('car/renewWarranty/', car_views.carRenewWarranty,
+         name='car-renew-warranty'),
+    path('car/delete/<str:pk>/', car_views.carDelete, name='car-delete'),
+
+    path('card/', card_views.cardOverview, name='card-overview'),
+    path('card/list/', card_views.cardList, name='card-list'),
+    path('card/listByDiscount/', card_views.cardListDecreasingByDiscount,
+         name='card-list-decreasing-by-discount'),
+    path('card/detail/<str:pk>/', card_views.cardDetail, name='card-detail'),
+    path('card/create/', card_views.cardCreate, name='card-create'),
+    path('card/random/<int:n>/', card_views.cardCreateRandom,
+         name='card-create-random'),
+    path('card/update/<str:pk>/', card_views.cardUpdate, name='card-update'),
+    path('card/delete/<str:pk>/', card_views.cardDelete, name='card-delete'),
+
+    path('transaction/',
+         transaction_views.transactionOverview,
+         name='transaction-overview'),
+    path('transaction/list/',
+         transaction_views.transactionList,
+         name='transaction-list'),
+    path('transaction/detail/<str:pk>/',
+         transaction_views.transactionDetail,
+         name='transaction-detail'),
+    path('transaction/list/<str:start>/<str:end>/',
+         transaction_views.transactionBetweenSums,
+         name='transaction-between-sums'),
+    path('transaction/create/',
+         transaction_views.transactionCreate,
+         name='transaction-create'),
+    path('transaction/random/<int:n>/',
+         transaction_views.transactionCreateRandom,
+         name='transaction-create-random'),
+    path('transaction/update/<str:pk>/',
+         transaction_views.transactionUpdate,
+         name='transaction-update'),
+    path('transaction/delete/<str:pk>/',
+         transaction_views.transactionDelete,
+         name='transaction-delete'),
+    path('transaction/delete/<str:start>/<str:end>/',
+         transaction_views.transactionDeleteBetweenDates,
+         name='transaction-delete-between-dates')
+]
