@@ -2,6 +2,12 @@ from ..serializers.car_serializer import CarSerializer
 from ..models.car import Car
 from ..utility.date_and_time import random_date
 
+from .undo_redo_service import UndoRedoService
+
+from ..UndoRedoDecorators.create_decorator import create_undo_redo
+from ..UndoRedoDecorators.update_decorator import update_undo_redo
+from ..UndoRedoDecorators.random_create_decorator import random_create_undo_redo
+
 from random import randint, choice
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
@@ -22,11 +28,24 @@ class CarService:
 
         return car
 
-    def create(car: Car) -> Car:
+    def search(text: str):
+        from django.db.models import Q
+        cars = Car.objects.filter(
+            Q(model__icontains=text) |
+            Q(acquisition_date__icontains=text) |
+            Q(kilometers__icontains=text) |
+            Q(total_workmanship__icontains=text)
+        )
+        
+        return cars
+
+    @create_undo_redo
+    def create(car: Car, undoredo: bool = True) -> Car:
         car.save()
         return car
 
-    def createRandom(n: int) -> list[Car]:
+    @random_create_undo_redo
+    def createRandom(n: int, undoredo: bool = True) -> list[Car]:
         possible_models = [
             'Tesla Model S', 'Tesla Model 3',
             'Tesla Model X', 'Tesla Model Y',
@@ -45,6 +64,7 @@ class CarService:
         ]
 
         cars = []
+        
         for i in range(n):
             cars.append(CarService.create(Car(
                 model=choice(possible_models),
@@ -52,11 +72,15 @@ class CarService:
                     date(2000, 1, 1), date(2022, 1, 1)),
                 kilometers=randint(0, 400000),
                 warranty=choice([True, False])
-            )))
+            ), undoredo=False))
+
 
         return cars
 
-    def update(new_car, id):
+    @update_undo_redo
+    def update(new_car, id, undoredo: bool = True):
+        import copy
+        
         try:
             car = Car.objects.get(id=id)
         except Car.DoesNotExist as e:
@@ -72,7 +96,7 @@ class CarService:
 
         return car
 
-    def renewWarranty():
+    def renewWarranty(undoredo: bool = True):
         cars = Car.objects.all()
 
         today = datetime.today()
@@ -86,10 +110,15 @@ class CarService:
 
         return cars
 
-    def delete(id):
+    def delete(id, undoredo: bool = True):
+        import copy
         try:
-            Car.objects.get(id=id).delete()
+            car = Car.objects.get(id=id)
+            car_copy = copy.deepcopy(car)
+            
+            car.delete()
+            
         except Car.DoesNotExist as e:
             raise Car.DoesNotExist(f'Error: {str(e)}')
 
-        return True
+        return car_copy

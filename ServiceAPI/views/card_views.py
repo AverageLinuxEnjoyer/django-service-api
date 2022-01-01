@@ -83,6 +83,10 @@ def cardUpdate(request, pk):
 @api_view(['DELETE'])
 def cardDelete(request, pk):
     try:
-        return Response(CardService.delete(id=pk))
+        serializer = CardSerializer(
+            instance=CardService.delete(id=pk), 
+            many=False
+        )
+        return Response(data=serializer.data)
     except Card.DoesNotExist as e:
         return Response(data={"detail": str(e)})

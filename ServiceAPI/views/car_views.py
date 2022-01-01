@@ -93,6 +93,13 @@ def carRenewWarranty(request):
 @api_view(['DELETE'])
 def carDelete(request, pk):
     try:
-        return Response(CarService.delete(id=pk))
+        serializer = CarSerializer(
+            instance=CarService.delete(id=pk), 
+            many=False
+        )
+        return Response(data=({
+            "detail":"success",
+            "deleted_object:":serializer.data
+        }))
     except Car.DoesNotExist as e:
         return Response(data={"detail": str(e)})

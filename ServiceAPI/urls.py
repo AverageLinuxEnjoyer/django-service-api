@@ -2,6 +2,7 @@ from django.urls import path
 from .views import car_views
 from .views import card_views
 from .views import transaction_views
+from .views import other_views
 
 urlpatterns = [
     path('car/', car_views.carOverview, name="car-overview"),
@@ -54,5 +55,9 @@ urlpatterns = [
          name='transaction-delete'),
     path('transaction/delete/<str:start>/<str:end>/',
          transaction_views.transactionDeleteBetweenDates,
-         name='transaction-delete-between-dates')
+         name='transaction-delete-between-dates'),
+    
+    path('undo/', other_views.undo, name="undo"),
+    path('redo/', other_views.redo, name="redo"),
+    path('search/', other_views.search, name="full-text-search"),
 ]

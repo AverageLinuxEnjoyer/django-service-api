@@ -2,6 +2,11 @@ from ..serializers.card_serializer import CardSerializer
 from ..models.card import Card
 from ..utility.date_and_time import random_date
 
+from .undo_redo_service import UndoRedoService
+
+from ..UndoRedoDecorators.create_decorator import create_undo_redo
+from ..UndoRedoDecorators.update_decorator import update_undo_redo
+
 from random import randint, choice
 from datetime import date
 
@@ -20,12 +25,26 @@ class CardService:
             raise Card.DoesNotExist(f'Error: {str(e)}')
 
         return card
+    
+    def search(text: str):
+        from django.db.models import Q
+        cards = Card.objects.filter(
+            Q(first_name__icontains=text) |
+            Q(last_name__icontains=text) |
+            Q(cnp__icontains=text) |
+            Q(birthday__icontains=text) |
+            Q(registration_date__icontains=text) |
+            Q(total_discounts__icontains=text)
+        )
+        
+        return cards
 
-    def create(card: Card):
+    @create_undo_redo
+    def create(card: Card, undoredo: bool = True):
         card.save()
         return card
 
-    def createRandom(n):
+    def createRandom(n, undoredo: bool = True):
         possible_first_names = [
             "Mike", "Ben", "Nick", "Lika", "Drew", "Dixie", "Yuri",
             "Hugh", "John", "Daniel", "Stephan", "Lucian", "Wilma",
@@ -50,11 +69,12 @@ class CardService:
                 registration_date=random_date(
                     date(2010, 1, 1), date(2022, 1, 1)
                 )
-            )))
+            ), undoredo=False))
 
         return cards
 
-    def update(new_card, id):
+    @update_undo_redo
+    def update(new_card, id, undoredo: bool = True):
         try:
             card = Card.objects.get(id=id)
         except Card.DoesNotExist as e:
@@ -71,10 +91,15 @@ class CardService:
 
         return card
 
-    def delete(id):
+    def delete(id, undoredo: bool = True):
+        import copy
         try:
-            card = Card.objects.get(id=id).delete()
+            card = Card.objects.get(id=id)
+            card_copy = copy.deepcopy(card)
+            
+            card.delete()
+            
         except Card.DoesNotExist as e:
             raise Card.DoesNotExist(f'Error: {str(e)}')
 
-        return True
+        return card_copy

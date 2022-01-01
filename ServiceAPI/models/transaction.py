@@ -2,6 +2,7 @@ from django.db import models
 from .car import Car
 from .card import Card
 
+
 class Transaction(models.Model):
     car = models.ForeignKey(Car, on_delete=models.CASCADE)
     card = models.ForeignKey(

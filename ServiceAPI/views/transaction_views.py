@@ -104,7 +104,11 @@ def transactionUpdate(request, pk):
 @api_view(['DELETE'])
 def transactionDelete(request, pk):
     try:
-        return Response(TransactionService.delete(id=pk))
+        serializer = TransactionSerializer(
+            instance=TransactionService.delete(id=pk), 
+            many=False
+        )
+        return Response(serializer.data)
     except Transaction.DoesNotExist as e:
         return Response(data={"detail": str(e)})
 

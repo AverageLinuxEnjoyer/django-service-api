@@ -2,6 +2,11 @@ from ..serializers.transaction_serializer import TransactionSerializer
 from ..models.transaction import Transaction
 from ..utility.date_and_time import random_datetime
 
+from .undo_redo_service import UndoRedoService
+
+from ..UndoRedoDecorators.create_decorator import create_undo_redo
+from ..UndoRedoDecorators.update_decorator import update_undo_redo
+
 from datetime import datetime
 from random import randint, choice
 from decimal import Decimal
@@ -33,10 +38,8 @@ class TransactionService:
 
         return transactions
 
-    def create(transaction: Transaction):
-        from car.models import Car
-        from card.models import Card
-
+    @create_undo_redo
+    def create(transaction: Transaction, undoredo: bool = True):
         # components price is 0 if the card has warranty
         car = transaction.car
 
@@ -62,10 +65,8 @@ class TransactionService:
 
         return transaction
 
-    def createRandom(n):
-        from car.models import Car
-        from card.models import Card
-
+    def createRandom(n, undoredo: bool = True):
+        
         possible_cars = list(
             Car.objects.all())
         possible_cards = list(
@@ -91,7 +92,8 @@ class TransactionService:
 
         return transactions
 
-    def update(new_transaction, id):
+    @update_undo_redo
+    def update(new_transaction, id, undoredo: bool = True):
         try:
             transaction = Transaction.objects.get(id=id)
         except Transaction.DoestNotExist as e:
@@ -107,15 +109,20 @@ class TransactionService:
 
         return transaction
 
-    def delete(id):
+    def delete(id, undoredo: bool = True):
+        import copy
         try:
-            Transaction.objects.get(id=id).delete()
+            transaction = Transaction.objects.get(id=id)
+            transaction_copy = copy.deepcopy(transaction)
+            
+            transaction.delete()
+            
         except Transaction.DoestNotExist as e:
             raise Transaction.DoesNotExist(f'Error: {str(e)}')
 
-        return True
+        return transaction_copy
 
-    def deleteBetweenDates(start, end):
+    def deleteBetweenDates(start, end, undoredo: bool = True):
         transactions = Transaction.objects.filter(
             datetime__gte=start,
             datetime__lte=end
